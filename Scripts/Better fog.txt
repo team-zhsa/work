@@ -1,0 +1,475 @@
+**Better Map Fog
+Creation Date: Feb. 7 2016
+Credits needed: You're free to decide by yourself. by MetalZelda
+Version: 1.3
+Script needed:Multiple events by Christopho -> http://forum.solarus-games.org/index.php/topic,784.0.html
+
+Version Changelog
+
+Code: [Select]
+--1.0--
+Initial code
+Can draw and move a surface, as well as setting the opacity
+Method: Using map.dat
+
+Code: [Select]
+--1.1--
+Bugfix: Strange behaviour on movement (movement not stopped, cutted surface), use a² = b² + c² and then root square it for surface's diagonal movement
+Added: Opacity modulation
+Method: Same as 1.0
+
+
+Code: [Select]
+--1.2--
+Code has been revamped, data is loaded through a Lua file
+Added: Surface coloration
+Added: Surface blend mode modifer
+Method: Parsing from maps/lib/fog_config.lua
+
+Code: [Select]
+--1.3--
+Bugfix: Error when going on a map where there is no fog data
+
+You might remember my very old map script that wander around the Development section, I've decided to update it, simpler, cleaner yet it is more efficient.
+My idea for this update is straightly taken from RPG Maker, you know, there is a GUI that allows you to select your fog, movement and opacity, and The Legend of Zelda: Minish Cap (Fire Cave Dungeon) this simply is the same idea, but instead, it is in pure Lua.
+
+**Documentation and technical presentation
+In older version, fogs were drawn using a menu, and constantly cleaned and redrawn on each map changes.
+Plus, you had to call a function to declare this fog, this was very annoying.
+This method is way simpler, as it use the default map functions, no need to call a function to draw a fog anymore.
+
+** Script calls
+In order to make this script to work, you need:
+
+1. A map metatable script
+This is my map_metatable.lua header
+Code: (lua) [Select]
+  --
+  local map_metatable = sol.main.get_metatable("map")
+  require("scripts/fog")(map_metatable)
+  --
+  A child's play !
+
+2. This script (See bellow) that you place in the /script folder (create it if it doesn't exist)
+3. The "fog_config.lua" sccript in /maps/lib/ 
+
+** Known bug
+All fixed.
+
+** How to use:
+  //The best is to have a map metatable
+ 
+  This is my map_metatable.lua header to load this script.
+  --
+  local map_metatable = sol.main.get_metatable("map")
+  require("scripts/fog")(map_metatable)
+  --
+ 
+  See ? It's child's play!
+
+** I want to draw a fog, teach me, master
+
+This is the base that you need to learn in order to draw a fog / move it / play with it's opacity
+
+Code: (lua) [Select]
+["map_id"]= {
+  fog                     = "fog",
+  fog_speed               = speed,
+  fog_angle               = angle,
+  fog_opacity             = opacity,
+  fog_depth               = use_depth,
+  fog_detph_multiplier    = depth_multiplier,
+  fog_opacity_range       = opacity_range,
+  fog_opacity_wait_time   = opacity_wait_time,
+  fog_opacity_update_time = opacity_update_time,
+  fog_color = {r, g, b, a},
+  fog_blend_mode = "blend_mode",
+},
+	
+Description
+	
+"map_id"        (String)     = The id of your map, shorter, it's file name
+"fog"           (String)     = The fog bitmap located in /sprites/fogs{
+speed           (Integer)    = The speed of your fog (0 = static, 999 = very fast, don't go above 999 or else it will crash)
+angle           (Integer)    = Number between 0 and 7 where 0 = east and 7 = south-east (counter clockwise)
+opacity         (Integer)    = The opacity of your fog, must be a valid number between 0 and 255
+
+--Optionnal
+use_depth (Boolean) = Use a depth effect (optionnal), value must be booleans (true or false) or nil
+depth_multiplier (Integer) = By default the depth multiply the movement by 1.5 to simulate faster fog movement when you move around, you can change this value (optionnal), value can be decimals and negative.
+opacity_range (Table) = Range that determine the maximum and minimum opacity, must be a table value, with 2 values (minimum and maximum opacity)
+opacity_wait_time (Integer) = Waiting time before the transition between max / min opacity and vice versa
+opacity_update_time (Integer) = Waiting time between opacity +/-1
+color  (Table) = Color (red, green, blue and alpha (transparency), values must be between 0 and 255)
+blend_mode (String) = Set the fog's blend mode, see Solarus' method of applying blend modes for surfaces (http://www.solarus-games.org/doc/latest/lua_api_drawable.html#lua_api_drawable_set_blend_mode)
+   
+Example, I wanna display a fog in the map with the id "Dungeon7"
+Code: (lua) [Select]
+["Dungeon7"]= {
+  fog = "forest_fog",
+  fog_speed = 10,
+  fog_angle = 3,
+  fog_opacity = 75,
+},
+   
+Another example: I want to draw a static image on the map with the id "forest"
+Code: (lua) [Select]
+["forest"]= {
+  fog = "forest_cloud",
+  fog_speed = 0,
+  fog_angle = 0,
+  fog_opacity = 75,
+},
+
+You can even use the Depth multiplier, if you don't set any value to it through fog_depth_multiplier, it's default value will be 1.5, yet you can specify your own value, even negative
+Code: (lua) [Select]
+["forest"]= {
+  fog = "forest_cloud",
+  fog_speed = 0,
+  fog_angle = 0,
+  fog_opacity = 75,
+  fog_depth = true
+},
+   
+Now, let's assume we're on a Fire Temple, we want a foggy thing with changing opacity, you can even use the Fog depth.
+We can change the Opacity
+   
+Code: (lua) [Select]
+["FireTemple_Room8"]= {
+  fog = "fire_fog",
+  fog_speed = 0,
+  fog_angle = 0,
+  fog_opacity = 75,
+  fog_opacity_range = {50, 110},
+  fog_opacity_wait_time = 1000,
+  fog_opacity_update_time = 10,
+},
+The opacity will change each 10ms (1 frame)
+When the max or minimum opacity has been reached, defined in fog_opacity_range, the script will pause for 1000 ms (1 sec) before resumine
+   
+Remember, this happen only in maps/lib/fog_config.lua
+So, if you want to declare a fog
+   
+Code: (lua) [Select]
+local fogs = {
+  ["FireTemple_Room8"]= {
+    fog = "fire_fog",
+    fog_speed = 0,
+    fog_angle = 0,
+    fog_opacity = 75,
+    fog_opacity_range = {50, 110},
+    fog_opacity_wait_time = 1000,
+    fog_opacity_update_time = 10,
+  },
+
+  ["forest"]= {
+    fog = "forest_cloud",
+    fog_speed = 0,
+    fog_angle = 0,
+    fog_opacity = 75,
+  },
+}
+
+return fogs
+
+
+**The Script
+Code: (lua) [Select]
+return function(map)
+--[[
+** Better map fog script
+** Creation Date: Feb. 7 2016
+** Credits needed: You're free to decibe by yourself.
+
+** Script depencies:
+  Multi events by Christopho (http://forum.solarus-games.org/index.php/topic,784.0.html)
+ 
+** What you need:
+  Create a folder in /sprites called "fogs" and place your fogs bitmap here.
+  Create a file called fog_config.lua in the "maps/lib" folder, and in this file, copy/paste this
+ 
+ 
+  local fogs = {
+ 
+  }
+  return fogs
+ 
+  This is the base of this script,
+
+** How to use:
+  //The best is to have a map metatable
+ 
+  This is my map_metatable.lua header
+  --
+  local map_metatable = sol.main.get_metatable("map")
+  require("scripts/fog_manager")(map_metatable)
+  --
+ 
+  See ? It's child's play!
+ 
+** Tutorial: Displaying a fog
+ 
+  This is the whole things you need to know about this script.
+	
+	["map_id"]= {
+	  fog                     = "fog",
+	  fog_speed               = speed,
+	  fog_angle               = angle,
+	  fog_opacity             = opacity,
+	  fog_depth               = use_depth,
+	  fog_detph_multiplier    = depth_multiplier,
+	  fog_opacity_range       = {opacity_range},
+	  fog_opacity_wait_time   = opacity_wait_time,
+	  fog_opacity_update_time = opacity_update_time,
+	  fog_color               = {r, g, b, a}
+	},
+	
+	Description
+	
+			 	"map_id"            (String)     = The id of your map, shorter, it's file name
+				"fog"               (String)     = The fog bitmap located in /sprites/fogs{
+			    speed               (Integer)    = The speed of your fog (0 = static, 999 = very fast, don't go above 999 or else it will crash)
+	            angle               (Integer)    = Number between 0 and 7 where 0 = east and 7 = south-east (counter clockwise)
+	            opacity             (Integer)    = The opacity of your fog, must be a valid number between 0 and 255
+	(Optionnal) use_depth           (Boolean)    = Use a depth effect (optionnal), value must be booleans (true or false) or nil
+	(Optionnal) depth_multiplier    (Integer)    = By default the depth multiply the movement by 1.5 to simulate faster fog movement when you move around, you can change this value (optionnal), value can be decimals and negative.
+	(Optionnal) opacity_range       (Table)      = Range that determine the maximum and minimum opacity, must be a table value, with 2 values (minimum and maximum opacity)
+	(Optionnal) opacity_wait_time   (Integer)    = Waiting time before the transition between max / min opacity and vice versa
+	(Optionnal) opacity_update_time (Integer)    = Waiting time between opacity +/-1
+	(Optionnal) color               (Table)      = Color (red, green, blue and alpha (transparency), values must be between 0 and 255)
+    (Optionnal) blend_mode          (String)     = Set the fog's blend mode, see Solarus' method of applying blend modes for surfaces (http://www.solarus-games.org/doc/latest/lua_api_drawable.html#lua_api_drawable_set_blend_mode)
+
+	
+	Example, I wanna display a fog in the map with the id "Dungeon7"
+	["Dungeon7"]= {
+	  fog                     = "forest_fog",
+	  fog_speed               = 10,
+	  fog_angle               = 3,
+	  fog_opacity             = 75,
+	},
+	
+	Another example: I want to draw a static image on the map with the id "forest"
+	["forest"]= {
+	  fog                     = "forest_cloud",
+	  fog_speed               = 0,
+	  fog_angle               = 0,
+	  fog_opacity             = 75,
+	},
+	
+	You can even use the Depth multiplier, if you don't set any value to it through fog_detph_multiplier, it's default value will be 1.5, yet you can specify
+	your own value, even negative
+	["forest"]= {
+	  fog                     = "forest_cloud",
+	  fog_speed               = 0,
+	  fog_angle               = 0,
+	  fog_opacity             = 75,
+	  fog_depth               = true
+	},
+	
+	Now, let's assume we're on a Fire Temple, we want a foggy thing with changing opacity, you can even use the Fog depth.
+	We can change the Opacity
+	
+	["FireTemple_Room8"]= {
+	  fog                     = "fire_fog",
+	  fog_speed               = 0,
+	  fog_angle               = 0,
+	  fog_opacity             = 75,
+	  fog_opacity_range       = {50, 110}
+	  fog_opacity_wait_time   = 1000
+	  fog_opacity_update_time = 10
+	},
+	
+	Remember, this happen only in maps/lib/fog_config.lua
+	
+	So, if you want to declare a fog
+	
+	local fogs = {
+	  ["FireTemple_Room8"]= {
+	    fog                     = "fire_fog",
+	    fog_speed               = 0,
+	    fog_angle               = 0,
+	    fog_opacity             = 75,
+	    fog_opacity_range       = {50, 110}
+	    fog_opacity_wait_time   = 1000
+	    fog_opacity_update_time = 10
+	  },
+	
+	
+	}
+	
+	return fogs
+]]
+
+  local movement
+  local opacity_state = 0
+  local fog_data = require("maps/lib/fog_config")
+ 
+  local function load_map(map_id)
+    local fog = {}
+ 	   
+    -- This map was not found while parsing the fog config
+    if fog_data[map_id] == nil then
+      return
+    end
+
+    local map = fog_data[map_id]
+	if map ~= nil then
+	  fog[1] = {
+		fog                   = map.fog,
+        fog_speed             = map.fog_speed,
+		fog_angle             = map.fog_angle,
+		fog_opacity           = map.fog_opacity,
+		fog_depth             = map.fog_depth,
+		fog_depth_multiplier  = map.fog_detph_multiplier,
+		fog_opacity_range     = map.fog_opacity_range,
+		fog_opacity_wait_time = map.fog_opacity_wait_time,
+		fog_opacity_update    = map.fog_opacity_update_time,
+		fog_color             = map.fog_color,
+		fog_blend_mode        = map.fog_blend_mode
+	  }
+	end
+	
+    return fog
+  end
+ 
+  local function update_opacity_surface(map)
+    -- No opacity range, no need to continue
+    if map.fog_opacity_r == nil then
+	  return
+	end
+	
+    local minimum, maximum = map.fog_opacity_r[1], map.fog_opacity_r[2]	
+	sol.timer.start(map, map.fog_opacity_u, function()
+	  local opacity = map.fog:get_opacity()
+	  local new_opacity = opacity_state == 0 and 1 or -1
+	 
+	  if opacity == (opacity_state == 0 and maximum or minimum) then
+		sol.timer.start(map, map.fog_opacity_w, function()
+		  opacity_state = opacity_state == 0 and 1 or 0
+		  update_opacity_surface(map)
+		end)
+	    return
+	  end
+		
+	  map.fog:set_opacity(opacity + new_opacity)
+		
+	  return opacity ~= (opacity_state == 0 and maximum or minimum)
+	end)
+  end
+ 
+  -- Update the movement
+  local function compute_movement(map)
+    map.fog:set_opacity(map.fog_opacity)
+	local fog_size_x, fog_size_y = map.fog:get_size()
+	
+	-- No speed, no need to continue
+	if map.fog_speed == 0 then
+	  return
+  	end
+	
+    local fog_angle = map.fog_angle
+	-- Get the Max movement in order to determine the max distance
+	-- Diagonal is determined by Pythagorean theorem a² = b² + c²
+	local diagonal = math.sqrt((fog_size_x * fog_size_x) + (fog_size_y * fog_size_y))
+	local angle = {
+	  fog_size_x,
+	  fog_size_y,
+	  fog_size_x,
+	  fog_size_y,
+	}
+	
+	local max_distance =  fog_angle > 0 and angle[fog_angle / 2] or 0
+	if fog_angle % 2 ~= 0 then
+	  max_distance = diagonal
+	end
+
+	function restart_overlay_movement()
+	  movement = sol.movement.create("straight")
+	  movement:set_speed(map.fog_speed)
+	  movement:set_max_distance(max_distance)
+	  movement:set_angle(fog_angle * math.pi / 4)
+	  movement:start(map.fog, function()
+		map.fog:set_xy(0, 0)
+		restart_overlay_movement()
+	  end)
+    end
+	restart_overlay_movement()
+  end
+
+  map:register_event("on_started", function(map)
+    local data = load_map(map:get_id())	
+	
+	if movement ~= nil then
+	  movement:stop()
+	end
+
+        if data == nil then
+          return
+        end
+	
+    for _, fog in ipairs(data) do
+	  map.fog           = sol.surface.create("fogs/".. fog.fog ..".png")
+	  map.fog_speed     = fog.fog_speed
+	  map.fog_opacity   = fog.fog_opacity
+	  map.fog_angle     = fog.fog_angle
+	  map.fog_depth     = fog.fog_depth
+	  map.fog_depth_mvt = fog.fog_depth_multiplier ~= nil and fog.fog_depth_multiplier or 1.5
+	  map.fog_opacity_r = fog.fog_opacity_range
+	  map.fog_opacity_w = fog.fog_opacity_wait_time
+	  map.fog_opacity_u = fog.fog_opacity_update
+	 
+	  if fog.fog_blend_mode ~= nil then
+	    map.fog:set_blend_mode(fog.fog_blend_mode)
+	  end
+	 
+	  if fog.fog_color ~= nil then
+	    map.fog:fill_color(fog.fog_color)
+	  end
+	 
+	  break
+	end
+	
+	
+
+	compute_movement(map)
+	update_opacity_surface(map)
+  end)
+
+  map:register_event("on_draw", function(map, dst_surface)
+    local scr_x, scr_y = dst_surface:get_size()
+	
+    if map.fog ~= nil then
+	  local x, y = map:get_camera():get_bounding_box()
+	  local overlay_width, overlay_height = map.fog:get_size()
+	 
+	  if map.fog_depth ~= nil then
+	    x, y = -math.floor(x * map.fog_depth_mvt), -math.floor(y * map.fog_depth_mvt)
+	  else
+	    x, y = -math.floor(x), -math.floor(y)
+	  end
+
+	  x = x % overlay_width  - 2 * overlay_width
+	  y = y % overlay_height - 2 * overlay_height
+	 
+	  local dst_y = y
+	  while dst_y < scr_y + overlay_height do
+	    local dst_x = x
+	    while dst_x < scr_x + overlay_width do
+	      map.fog:draw(dst_surface, dst_x, dst_y)
+		  dst_x = dst_x + overlay_width
+	    end
+	    dst_y = dst_y + overlay_height
+	  end
+    end
+  end)
+end
+
+Small example, Cloud.
+
+Code: [Select]
+  fog = "overworld_smallcloud",
+  fog_speed = 10,
+  fog_angle = 3,
+  fog_opacity = 75,
+
+This is how it will looks (minus the tone)

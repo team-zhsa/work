@@ -1,0 +1,28 @@
+Ce dossier contient:
+
+- La map du mini-jeu + son script
+- Le code de "l'ennemi" cible à toucher
+- Son sprite + animations
+- Les dialogues du gérant du stand de tir
+
+Tous ces fichiers sont à placer aux endroits adéquats dans les données
+de votre quête et les dialogues à copier coller dans le fichier
+correspondant aux dialogues de votre quête (les dialogues sont en fr).
+
+Quelques petites précisions:
+
+- Le mini-jeu utilise le script "cannonball_manager" originellement
+contenu dans Zelda XD2: Mercuri's Chess
+- Le mini-jeu donne comme récompense une upgrade du carquois
+(la première ou la seconde dépendant de votre carquois actuel sachant
+que vous ne pouvez gagner qu'une upgrade au stand de tir, vos autres
+victoires vous donnant de l'argent)
+- Vous êtes totalement libres de modifier le code si des choses ne vous
+conviennent pas ou vous semblent bonnes à optimiser, ce qui sera sûrement
+le cas
+- J'en profite ici pour remercier toute l'équipe Solarus sans laquelle
+rien ici n'aurait été possible et je les remercie également pour le
+script des boulets de cannons que j'ai réutilisé ici.
+
+Si jamais vous constatez des problèmes n'hésitez pas à m'en faire part
+et bonne création à vous!

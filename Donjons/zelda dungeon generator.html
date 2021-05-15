@@ -1,0 +1,576 @@
+<html>
+  <head>
+    <script>
+"use strict";
+class DiaObject {
+    constructor(connection, id = DiaObject.objects.length) {
+        this.id = id;
+        DiaObject.objects[id] = this;
+        this.connection = connection;
+    }
+    get stringId() {
+        return "O" + this.id;
+    }
+    static reset() {
+        this.objects = [];
+    }
+    static getObjectById(id) {
+        if (typeof id === "string") {
+            var matches = id.match(/O(\d+)/);
+            if (matches === null) {
+                throw "Not an id.";
+            }
+            id = parseInt(matches[1]);
+        }
+        var diaObject = this.objects[id];
+        if (diaObject === void 0) {
+            throw "id does not exist.";
+        }
+        return diaObject;
+    }
+    static outputXML() {
+        var objectLayer = "";
+        var stateLayer = "";
+        var connectionLayer = "";
+        var stateLinkLayer = "";
+        var returnValue = '<?xml version="1.0" encoding="UTF-8"?>' +
+            '<diagram xmlns:dia="http://www.lysator.liu.se/~alla/dia/">' +
+            '<layer name="Background" visible="true" active="true">';
+        for (var node of this.objects) {
+            if (node instanceof DungeonNode) {
+                objectLayer += node.outputXML();
+            }
+            else if (node instanceof DiaLink) {
+                if (node.lineType === 0) {
+                    connectionLayer += node.outputXML();
+                }
+                else {
+                    stateLinkLayer += node.outputXML();
+                }
+            }
+            else {
+                stateLayer += node.outputXML();
+            }
+        }
+        returnValue += '</layer></diagram>';
+        return '<?xml version="1.0" encoding="UTF-8"?>' +
+            '<diagram xmlns:dia="http://www.lysator.liu.se/~alla/dia/">' +
+            '<layer name="Rooms" visible="true" active="true">' + objectLayer + '</layer>' +
+            '<layer name="States" visible="true" active="false">' + stateLayer + '</layer>' +
+            '<layer name="Paths" visible="true" active="false">' + connectionLayer + '</layer>' +
+            '<layer name="State Links" visible="true" active="false">' + stateLinkLayer + '</layer>' +
+            '</diagram>';
+    }
+}
+DiaObject.objects = [];
+/// <reference path="DiaObject.ts" />
+class DiaLink extends DiaObject {
+    get parent() { return DiaObject.getObjectById(this.parentId); }
+    get child() { return DiaObject.getObjectById(this.childId); }
+    constructor(parentId, childId, lockedBy = "", parentArrow = 3, childArrow = 3, lineType = 0) {
+        super(0);
+        this.parentId = parentId;
+        this.childId = childId;
+        this.parentArrow = parentArrow;
+        this.childArrow = childArrow;
+        this.lineType = lineType;
+        this.text = lockedBy;
+    }
+    outputXML() {
+        return '<object type="Standard - Line" version="0" id="' + this.stringId + '">' +
+            '<attribute name="start_arrow"><enum val="' + this.parentArrow + '"/></attribute>' +
+            '<attribute name="end_arrow"><enum val="' + this.childArrow + '"/></attribute>' +
+            '<attribute name="start_arrow_length"><real val="0.25"/></attribute>' +
+            '<attribute name="start_arrow_width"><real val="0.25"/></attribute>' +
+            '<attribute name="end_arrow_length"><real val="0.25"/></attribute>' +
+            '<attribute name="end_arrow_width"><real val="0.25"/></attribute>' +
+            '<attribute name="line_style"><enum val="' + this.lineType + '"/></attribute>' +
+            '<connections>' +
+            '<connection handle="0" to="' + this.parent.stringId + '" connection="' + this.parent.connection + '"/>' +
+            '<connection handle="1" to="' + this.child.stringId + '" connection="' + this.child.connection + '"/>' +
+            '</connections>' +
+            '</object>' +
+            (this.text !== "" ?
+                '<object type="Standard - Text" version="1" id="T' + this.stringId + '">' +
+                    '<attribute name="text">' +
+                    '<composite type="text">' +
+                    '<attribute name="string"><string>#' + this.text + '#</string></attribute>' +
+                    '<attribute name="height"><real val="1"/></attribute>' +
+                    '<attribute name="alignment"><enum val="1"/></attribute>' +
+                    '</composite>' +
+                    '</attribute>' +
+                    '<attribute name="valign"><enum val="2"/></attribute>' +
+                    '<attribute name="show_background"><boolean val="true"/></attribute>' +
+                    '<connections>' +
+                    '<connection handle="0" to="' + this.stringId + '" connection="0"/>' +
+                    '</connections>' +
+                    '</object>' : '');
+    }
+}
+class DiaNode extends DiaObject {
+    constructor(text, color = "80FF80") {
+        super(16);
+        this.x = 0;
+        this.y = 0;
+        this.text = text;
+        this.color = color;
+        this.x = (this.id % 25) * 4;
+        this.y = Math.floor(this.id / 25) * 4;
+    }
+    outputXML() {
+        return '<object type="Flowchart - Box" version="0" id="' + this.stringId + '">' +
+            '<attribute name="elem_corner"><point val="' + this.x + ',' + this.y + '"/></attribute>' +
+            '<attribute name="elem_width"><real val="2"/></attribute>' +
+            '<attribute name="elem_height"><real val="2"/></attribute>' +
+            '<attribute name="inner_color"><color val="#' + this.color + '"/></attribute>' +
+            '<attribute name="border_width"><real val="0.1"/></attribute>' +
+            '<attribute name="padding"><real val="0.25"/></attribute>' +
+            '<attribute name="text">' +
+            '<composite type="text">' +
+            '<attribute name="string"><string>#' + this.text + '#</string></attribute>' +
+            '<attribute name="font"><font family="sans" style="0" name="Helvetica"/></attribute>' +
+            '<attribute name="height"><real val="1"/></attribute>' +
+            '<attribute name="color"><color val="#000000"/></attribute>' +
+            '<attribute name="alignment"><enum val="1"/></attribute>' +
+            '</composite>' +
+            '</attribute>' +
+            '</object>';
+    }
+}
+const NO_ARROW = 0;
+const ARROW = 3;
+const DIAMOND = 5;
+const SOLID_LINE = 0;
+const DASHED_LINE = 4;
+class DungeonNode extends DiaNode {
+    get childrenIds() {
+        return new Set(this._childLinks.keys());
+    }
+    get generated() {
+        return this.generator === null;
+    }
+    get childLinks() {
+        return this._childLinks;
+    }
+    set childLinks(value) {
+        this._childLinks = value;
+        for (var link of value.values()) {
+            link.parentId = this.id;
+            var diaObject = DiaObject.objects[link.childId];
+            if (diaObject instanceof DungeonNode) {
+                diaObject.parent = this;
+            }
+        }
+    }
+    constructor(text, id) {
+        if (typeof text === "string") {
+            super(text);
+            this.generator = null;
+        }
+        else {
+            super("");
+            this.generator = text;
+        }
+        this._childLinks = new Map();
+    }
+    get children() {
+        var value = [];
+        for (var child of this.childrenIds) {
+            value.push(DiaObject.getObjectById(child));
+        }
+        return value;
+    }
+    addChild(child, link = new DiaLink(this.id, child.id)) {
+        this._childLinks.set(child.id, link);
+        child.parent = this;
+    }
+    addChildren(links) {
+        for (var link of links) {
+            this._childLinks.set(link.childId, link);
+            link.parentId = this.id;
+            var diaObject = DiaObject.objects[link.childId];
+            if (diaObject instanceof DungeonNode) {
+                diaObject.parent = this;
+            }
+        }
+    }
+    generate() {
+        while (!this.generated) {
+            this.generator(this.parent);
+        }
+    }
+    get height() {
+        // console.log("In height function of " + this.id);
+        if (this._childLinks.size === 0) {
+            // console.log("returning height of " + this.id);
+            return 2;
+        }
+        else {
+            var childHeight = 0;
+            for (var childLink of this.childLinks.keys()) {
+                var child = this.childLinks.get(childLink);
+                if (child.parentArrow === 3) {
+                    childHeight += child.child.height;
+                }
+                childHeight += 1;
+            }
+            childHeight -= 1;
+            // console.log("returning height of " + this.id);
+            return childHeight;
+        }
+    }
+    position(left, top) {
+        var height = this.height;
+        this.x = left;
+        this.y = top + ((height - 2) / 2);
+        var childTop = top;
+        var children = this.children;
+        for (var childLink of this.childLinks.keys()) {
+            var link = this.childLinks.get(childLink);
+            if (link.parentArrow === 3) {
+                var child = link.child;
+                child.position(left + 4, childTop);
+                childTop += child.height + 1;
+            }
+        }
+    }
+}
+function start() {
+    DiaObject.reset();
+    var s = new DungeonNode("s");
+    var g = new DungeonNode("g");
+    var roll = Math.random();
+    if (roll < .25) {
+        var om = new DungeonNode(OMn("?"));
+        var oo = new DungeonNode(OOn());
+        s.addChild(om);
+        om.addChild(oo);
+        oo.addChild(g);
+    }
+    else if (roll < .5) {
+        var c = new DungeonNode(Cn());
+        var ol = new DungeonNode(OLn("!"));
+        var ui = new DungeonNode(UIn("hp"));
+        var om = new DungeonNode(OMn("?"));
+        var oo = new DungeonNode(OOn());
+        s.addChild(c);
+        c.addChild(ol);
+        ol.addChild(ui);
+        c.addChild(om);
+        om.addChild(oo);
+        oo.addChild(g);
+    }
+    else if (roll < .75) {
+        var uiItem = new DungeonNode(UIn("?"));
+        var uiBossKey = new DungeonNode(UIn("i5"));
+        var lockItem = new DungeonNode(OLn("?"));
+        var lockBossKey = new DungeonNode(OLn("i5"));
+        var boss = new DungeonNode("eb");
+        s.addChild(uiItem);
+        s.addChild(uiBossKey);
+        s.addChild(lockItem);
+        lockItem.addChild(lockBossKey);
+        lockBossKey.addChild(boss);
+        boss.addChild(g);
+    }
+    else {
+        var uiItem = new DungeonNode(UIn("?"));
+        var uiBossKey = new DungeonNode(UIn("i5"));
+        var lockItem = new DungeonNode(OLn("?"));
+        var lockBossKey = new DungeonNode(OLn("i5"));
+        var boss = new DungeonNode("eb");
+        s.addChild(uiItem);
+        s.addChild(lockItem);
+        lockItem.addChild(uiBossKey);
+        s.addChild(lockBossKey);
+        lockBossKey.addChild(boss);
+        boss.addChild(g);
+    }
+    for (var objectIndex = 0; objectIndex < DiaObject.objects.length; objectIndex++) {
+        var diaObject = DiaObject.objects[objectIndex];
+        if (diaObject instanceof DungeonNode) {
+            diaObject.generate();
+        }
+    }
+    try {
+        s.position(0, 0);
+    }
+    catch (e) {
+        console.log(e);
+    }
+    var roomCount = 0;
+    for (var diaObject of DiaObject.objects) {
+        if (diaObject instanceof DungeonNode)
+            roomCount++;
+    }
+    console.log("Generation complete");
+    var element = document.createElement('a');
+    element.innerText = "Dungeon (" + roomCount + " rooms)";
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(DiaObject.outputXML()));
+    element.setAttribute('download', "dungeon.dia");
+    // element.click();
+    document.body.appendChild(element);
+    document.body.appendChild(document.createElement("br"));
+}
+function OMn(lockType) {
+    return function (parent) {
+        this.text = "n";
+        this.generator = null;
+        var ol = new DungeonNode(OLn(lockType));
+        ol.childLinks = this.childLinks;
+        this.childLinks = new Map();
+        this.addChild(ol);
+        var ui = new DungeonNode(UIn(lockType));
+        this.addChild(ui);
+        var ml = new DungeonNode(MLn(lockType));
+        this.addChild(ml);
+        var gb = new DungeonNode(GBn());
+        ml.addChild(gb);
+    };
+}
+function UIn(itemType) {
+    return function (parent) {
+        this.childLinks.clear();
+        if (Math.random() < .5) {
+            this.generator = Cn();
+        }
+        else {
+            this.generator = Sn();
+        }
+        var emNode = new DungeonNode("em");
+        this.addChild(emNode);
+        var itemNode = new DungeonNode(itemType);
+        emNode.addChild(itemNode);
+        itemNode.addChild(parent, new DiaLink(itemNode.id, parent.id, "", NO_ARROW));
+    };
+}
+function Cn() {
+    var roll = Math.random();
+    var generator = null;
+    if (roll < .25) {
+        generator = Hn();
+    }
+    else if (roll < .5) {
+        generator = MOn();
+    }
+    else if (roll < .75) {
+        generator = MMn();
+    }
+    else {
+        generator = MSn();
+    }
+    return generator;
+}
+function Hn() {
+    return function (parent) {
+        this.text = "n";
+        this.generator = null;
+        this.addChild(new DungeonNode(GBn()));
+    };
+}
+function GBn() {
+    var roll = Math.random();
+    if (roll < .1) {
+        return UIn("hp");
+    }
+    else if (roll < .5) {
+        return MIn("ir");
+    }
+    else if (roll < .75) {
+        return MIn("ib");
+    }
+    else {
+        return MIn("ia");
+    }
+}
+function MIn(itemType) {
+    return function (parent) {
+        if (Math.random() < .25) {
+            this.generator = Cn();
+        }
+        else {
+            this.generator = Sn();
+        }
+        this.childLinks.clear();
+        var itemNode = new DungeonNode(itemType);
+        this.addChild(itemNode);
+        itemNode.addChild(parent, new DiaLink(itemNode.id, parent.id, "", NO_ARROW));
+    };
+}
+function Sn() {
+    return function (parent) {
+        var roll = Math.random();
+        if (roll < .3) {
+            this.text = "n";
+            this.generator = null;
+        }
+        else if (roll < .6) {
+            this.text = "p";
+            this.generator = null;
+        }
+        else if (roll < .9) {
+            this.text = "e";
+            this.generator = null;
+        }
+        else {
+            var childLinks = this.childLinks;
+            this.childLinks = new Map();
+            var s = new DungeonNode(Sn());
+            this.addChild(s);
+            s.childLinks = childLinks;
+        }
+    };
+}
+function MOn() {
+    return function (parent) {
+        this.text = "n";
+        this.generator = null;
+        var childLinks = this.childLinks;
+        this.childLinks = new Map();
+        this.addChild(new DungeonNode(MIn("i1")));
+        var ol = new DungeonNode(OLn("i1"));
+        ol.childLinks = childLinks;
+        this.addChild(ol);
+    };
+}
+function OLn(keyType) {
+    return function (parent) {
+        var tailNode = new DungeonNode("n");
+        if (Math.random() < .25) {
+            this.generator = Cn();
+        }
+        else {
+            this.generator = Sn();
+        }
+        tailNode.childLinks = this.childLinks;
+        this.childLinks = new Map();
+        this.addChild(tailNode, new DiaLink(this.id, tailNode.id, keyType));
+    };
+}
+function MMn() {
+    return function (parent) {
+        this.text = "n";
+        this.generator = null;
+        var state = new DiaNode("tog", "FF80FF");
+        var swl = new DungeonNode(SWLn(state, false));
+        swl.childLinks = this.childLinks;
+        this.childLinks = new Map();
+        this.addChild(swl);
+        this.addChild(new DungeonNode(SWn(state)));
+        var mm2 = new DungeonNode(MM2n(state, true));
+        this.addChild(mm2);
+        mm2.addChild(new DungeonNode(GBn()));
+    };
+}
+function SWn(stateNode) {
+    return function (parent) {
+        if (Math.random() < .25) {
+            this.generator = Cn();
+        }
+        else {
+            this.generator = Sn();
+        }
+        this.childLinks.clear();
+        var sw = new DungeonNode("sw");
+        this.addChild(sw);
+        sw.addChild(parent, new DiaLink(sw.id, parent.id, "", NO_ARROW));
+        new DiaLink(sw.id, stateNode.id, "", DIAMOND, NO_ARROW, DASHED_LINE);
+    };
+}
+function SWLn(stateNode, applyNot) {
+    return function (parent) {
+        if (Math.random() < .25) {
+            this.generator = Cn();
+        }
+        else {
+            this.generator = Sn();
+        }
+        var n = new DungeonNode("n");
+        n.childLinks = this.childLinks;
+        this.childLinks = new Map();
+        var nLink = new DiaLink(this.id, n.id);
+        this.addChild(n, nLink);
+        new DiaLink(stateNode.id, nLink.id, (applyNot ? "!" : ""), DIAMOND, NO_ARROW, DASHED_LINE);
+    };
+}
+function MM2n(stateNode, applyNot) {
+    return function (parent) {
+        this.generator = SWLn(stateNode, applyNot);
+        var swl = new DungeonNode(SWLn(stateNode, !applyNot));
+        swl.childLinks = this.childLinks;
+        this.childLinks = new Map();
+        this.addChild(swl);
+        var sw = new DungeonNode(SWn(stateNode));
+        this.addChild(sw);
+        if (Math.random() < .5) {
+            var mm2 = new DungeonNode(MM2n(stateNode, true));
+            this.addChild(mm2);
+            var gb = new DungeonNode(GBn());
+            mm2.addChild(gb);
+        }
+    };
+}
+function MSn() {
+    return function (parent) {
+        console.log("Creating Multi-switch");
+        this.text = "n";
+        this.generator = null;
+        var state = new DiaNode("and", "FF80FF");
+        var swl = new DungeonNode(SWLn(state, false));
+        var ms2 = new DungeonNode(MS2n(state));
+        swl.childLinks = this.childLinks;
+        this.childLinks = new Map();
+        this.addChild(swl);
+        this.addChild(ms2);
+    };
+}
+function MS2n(stateNode) {
+    return function (parent) {
+        console.log("Creating another switch");
+        this.text = "n";
+        this.generator = null;
+        this.addChild(new DungeonNode(SWn(stateNode)));
+        if (Math.random() < .25) {
+            this.addChild(new DungeonNode(MS2n(stateNode)));
+        }
+    };
+}
+function MLn(lockType) {
+    return function (parent) {
+        var olfn = OLn(lockType);
+        if (Math.random() < .25) {
+            this.text = "n";
+            this.generator = null;
+            var ol = new DungeonNode(olfn);
+            ol.childLinks = this.childLinks;
+            this.childLinks = new Map();
+            this.addChild(ol);
+            var ml = new DungeonNode(MLn(lockType));
+            ml.addChild(new DungeonNode(GBn()));
+            this.addChild(ml);
+        }
+        else {
+            this.generator = olfn;
+        }
+    };
+}
+function OOn() {
+    return function (parent) {
+        this.text = "n";
+        this.generator = null;
+        var eb = new DungeonNode("eb");
+        eb.childLinks = this.childLinks;
+        this.childLinks = new Map();
+        this.addChild(new DungeonNode(UIn("i5")));
+        var ol = new DungeonNode(OLn("i5"));
+        ol.addChild(eb);
+        this.addChild(ol);
+    };
+}
+
+</script>
+</head>
+<body>
+  <button onclick="start();">Generate a dungeon</button><br>
+</body>
+</html>
