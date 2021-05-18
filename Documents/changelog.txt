@@ -147,6 +147,7 @@ Alpha 1.8 (11/05/21) "Eel Update":
 	
 Alpha 1.9 (planned 15/06/21) "Flatfish Update":
 	ADD: Added a secret credits music.
+	ADD: Added custom running script.
 	ADD: Readded weather script from Diarandor.
 	CHG: Cleaned up items sprites.
 	FIX: Fixed bombs not being liftable.
