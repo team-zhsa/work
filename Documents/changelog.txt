@@ -126,7 +126,7 @@ Alpha 1.8 (11/05/21) "Eel Update":
 	ADD: Added hero conditions (electrocution, freezing, confusion, slow, poisoned) from BOM.
 	ADD: Added ennemies.
 	ADD: Added map name system.
-	CHG: Changed NPCs palette by changing black to {40, 40, 40} and by swtiching to the american palette.
+	CHG: Changed NPCs palette by changing black to {40, 40, 40} and by swtiching to the NTSC palette.
 	CHG: Changed musics.
 	CHG: Changed treasure dialogues to ALTTP's.
 	CHG: Changed dialogue box sprites.
@@ -138,6 +138,7 @@ Alpha 1.8 (11/05/21) "Eel Update":
 	CHG: Changed title screen background.
 	CHG: Reduced dungeons minimaps sprites to 40x56 instead of 80x112.
 	CHG: Tweaked random pickables probabilities.
+	CHG: Progressively switched enemies behaviour to ALTTD'S.
 	FIX: Fixed game over red screen having the wrong color.
 	FIX: Fixed game crashing when picking pickables with the hookshot.
 	FIX: Fixed game crashing when killing the first boss.
@@ -148,19 +149,33 @@ Alpha 1.8 (11/05/21) "Eel Update":
 Alpha 1.9 (planned 15/06/21) "Flatfish Update":
 	ADD: Added a secret credits music.
 	ADD: Added custom running script.
+	ADD: Added support for inside maps in the minimap.
 	ADD: Readded weather script from Diarandor.
+	ADD: Started adding support for joypad in menus and items.
+	ADD: Added methods game:is_quest_active() and game:set_quest_active().
+	ADD: Added methods game:is_quest_finished() and game:set_quest_finished().
+	ADD: Added a custom title screen.
+	CHG: Changed to a global field music manager instead of defining the music from the maps themselves.
 	CHG: Cleaned up items sprites.
+	CHG: Cleaned up items dialog icons sprites.
+	CHG: Changed savegames menu.
+	CHG: Changed some graphics.
+	CHG: Changed cacti sprite by making it opaque instead of transparent.
+	CHG: Progressively switched enemies behaviour to ALTTD'S.
+	CHG: Cleaned up soldiers sprites.
 	FIX: Fixed bombs not being liftable.
-	TDO: Clean up sounds.
+	REM: Removed "maps/houses" folder.
+	TDO: Make the fucking tunics work pls.
 	TDO: Add a boat.
-	TDO: Change hero sprite on using feather.
+	TDO: Add an inside wooden tileset.
+	TDO: Progressively switch signs to ALTTD's.
 	TDO: Change item sprites on hero.
 	TDO: Update the map scripts to ALTTD's.
-	TDO: Progressively switch enemies behaviour to ALTTD'S.
-	TDO: Fix bosses.
 
 Alpha 1.10 (planned 20/07/21) "Goldfish Update":
 	TDO: Add an extension loader.
+	TDO: finish ze map.
+	TDO: Change hero sprite on using feather.
 	TDO: Progressively switch enemies behaviour to ALTTD'S.
 
 Alpha 1.11 (planned 17/08/21) "Haddock Update"/"The Great Update": maybe switch to beta
@@ -183,7 +198,6 @@ Alpha 1.13/Beta 1.2 (//) "Jawfish Update"/"Weapon Update":
 Alpha 1.14/Beta 1.3 (//) "Koi Update"/"Quest Update":
 	TDO: Add quests.
 	TDO: Add quests in quest pause menu.
-	TDO: Make tunics assignable.
 
 Alpha 1.15 (//) "Ladyfish Update":
 

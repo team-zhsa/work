@@ -6,10 +6,6 @@ Inside A3
 Inside I3
 C2
 J1
-
-Maps César :
-H2
-G3
 I2
 J2
 K2
@@ -17,8 +13,6 @@ H6
 G6
 H5
 G5
-
-Maps Minh :
 K4
 G7
 E4
@@ -76,5 +70,15 @@ TUNIC-3	: Tunique rouge
 TUNIC-4	: Tunique verte
 SHIELD1 : Bouclier du héros
 SHIELD2 : Bouclier hylien
-SHIELD3 : Bouclier reflet
+SHIELD3 : Bouclier miroir
 
+Equipement :
+Trading 1 : Carte des Mers
+	Quoi ?									Où trouver ?				Où amener ?
+	Paille									Forêt de la Forge			Sorcière
+	Graines									Sorcière					Sanctuaire
+	Livre rouge								Sanctuaire					Bibliothèque de Cocorico
+	Livre turquoise							Bibliothèque de Cocorico	Bibliothèque du Château
+	Atlas d'Hyrule							Bibliothèque du Château		Bibliothèque de Cocorico
+	Lettre									Bibliothèque de Cocorico	Cartographe
+	Carte des Mers							Cartographe

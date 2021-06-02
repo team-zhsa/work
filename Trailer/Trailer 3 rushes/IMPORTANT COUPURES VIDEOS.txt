@@ -1,0 +1,50 @@
+Les rushes ont été regroupés en catégories.
+L'idéal serait d'alterner phases de déplacement "marche XX", phases de combat "combat XX" et phases de dialogues "cinématique XX".
+Attention certains rushes commencent avant l'action et il y a donc un temps de latence entre le début de la vidéo et le début de ce qui sera réellement dans le trailer.
+La vidéo "Intro" est à insérer au début de la vidéo, avant les autres passages mais après l'avertissement épilepsie.
+Bien que les passages soient numérotés, tu es libre de les mettre dans l'ordre que tu le souhaite. Par exemple, tu peux mettre d'abord le passage "cinématique 11" puis "marche 5" ou alors "combat 9" puis "cinématique 3", libre à toi.
+Certaines vidéos ont du son et d'autres non. SAUF pour l'intro, il faudra enlever le son et le remplacer par la musique. L'intro aura quant à elle sa musique. Cette fois, il n'y aura pas de texte entre les vidéos.
+Tu pourrais t'inspirer de cette vidéo pour monter le trailer : https://www.youtube.com/watch?v=wg1MXUZC2_E
+Si les mentions de début et de fin sont "--", alors il n'y a aucune coupure à faire, c'est-à-dire que la vidéo ne sera pas raccourcie.
+Les durées de début et fin sont mesurées en minutes:secondes:images, sachant qu'il devrait y avoir 30 images par secondes (standard NTSC). La durée (colonne de droite) est celle obtenue APRES coupure.
+Bon courage et merci !
+
+Coupures vidéos :
+nom							début	;						durée
+combat 1					--		;						--
+combat 2					00:02:10;						--
+combat 3					00:03:20;						--
+combat 4					00:00:16;						--
+combat 5					00:01:00;						--
+combat 6					00:01:00;						--
+combat 7					00:04:05;						00:04:10
+combat 8					00:01:08;						--
+cinématique 1				--		;						--
+cinématique 2				00:00:12;						--
+cinématique 3				00:00:26;						00:01:07
+cinématique 4				00:03:20;						--
+cinématique 5				00:01:25;						00:02:57
+cinématique 6				00:00:15;						--
+cinématique 7				00:00:10;						00:03:14
+cinématique 8				00:01:10;						00:02:10
+cinématique 9				00:00:20;						--
+cinématique 10				00:00:15;						00:03:05
+cinématique 11				--		;						--
+intégral 1					--		;						--
+marche 1					00:00:11;						00:01:19
+marche 2					00:00:10;						--		
+marche 3					00:00:22;						--
+marche 4					--		;						--
+marche 5					--		;						00:02:00
+marche 6					00:00:20;						00:03:00
+marche 7					00:00:15;						00:03:05
+marche 8					--		;						--
+marche 9					--		;						--
+marche 10					00:00:15;						--
+marche 11					--		;						--
+marche 12					00:00:20;						00:04:20
+marche 13					00:03:00;						--
+marche 14					00:02:00;						00:01:14
+marche 15					00:23:00;						00:02:00
+marche 16					--		;						--
+intro						--		;						--
