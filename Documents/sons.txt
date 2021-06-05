@@ -1,0 +1,60 @@
+Arbre des sons :
+
+common/
+	dialog/
+		done
+		message_end
+		message_letter
+		no
+	door/
+		boss_door_unlock
+		mechanical_open
+		stone_close
+		stone_open
+		stone_slam
+		unlock_small_key
+	magic_bar/
+		magic_bar
+	medallion/
+		medallion_appears
+		medallion_falls
+	bars_dungeon
+	bars_npc_dialog
+	big_item
+	bombers_notification
+	chest_appears
+	chest_creaks
+	chest_minor_item
+	chest_opening
+	get_heart_container
+	get_piece_of_heart
+	get_small_item0
+	get_small_item1
+	gong
+	hint_notification
+	item_away
+	item_in_deep_water
+	item_in_hole
+	item_in_lava
+	item_letter
+	item_show
+	minor_item
+	secret_discover_minor
+	secret_discover_minor0
+	sidequest_major_item
+	sidequest_minor_item
+enemies/
+	_boss/
+		?
+	_miniboss/
+		?
+	bari
+	beamos
+	gold_skulltula_token_spawn
+	pike_obstacle_reached
+	rat
+	redead
+
+	
+	
+	

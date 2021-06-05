@@ -1,4 +1,4 @@
 *.mp4
 *.zip
-Documents/Images Maps/Thumbs.db
-Documents/Images Maps/Untitled.xcf
+**/Thumbs.db
+Documents/Images Maps/map globale.xcf

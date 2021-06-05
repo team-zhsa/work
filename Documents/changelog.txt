@@ -155,6 +155,8 @@ Alpha 1.9 (planned 15/06/21) "Flatfish Update":
 	ADD: Added methods game:is_quest_active() and game:set_quest_active().
 	ADD: Added methods game:is_quest_finished() and game:set_quest_finished().
 	ADD: Added a custom title screen.
+	ADD: Added bosses.
+	ADD: Added healing wand.
 	CHG: Changed to a global field music manager instead of defining the music from the maps themselves.
 	CHG: Cleaned up items sprites.
 	CHG: Cleaned up items dialog icons sprites.
@@ -163,14 +165,17 @@ Alpha 1.9 (planned 15/06/21) "Flatfish Update":
 	CHG: Changed cacti sprite by making it opaque instead of transparent.
 	CHG: Progressively switched enemies behaviour to ALTTD'S.
 	CHG: Cleaned up soldiers sprites.
+	CHG: Cleaned up enemies.
+	CHG: Changed shields sprites.
 	FIX: Fixed bombs not being liftable.
+	FIX: Fixed tunics only changing the sprite and not dividing the damage.
 	REM: Removed "maps/houses" folder.
-	TDO: Make the fucking tunics work pls.
 	TDO: Add a boat.
 	TDO: Add an inside wooden tileset.
 	TDO: Progressively switch signs to ALTTD's.
 	TDO: Change item sprites on hero.
 	TDO: Update the map scripts to ALTTD's.
+	TDO: Fix the magic bar (50, 100, 150).
 
 Alpha 1.10 (planned 20/07/21) "Goldfish Update":
 	TDO: Add an extension loader.
@@ -184,12 +189,9 @@ Alpha 1.11 (planned 17/08/21) "Haddock Update"/"The Great Update": maybe switch 
 	TDO: Progressively switch enemies behaviour to ALTTD'S.
 
 Alpha 1.12/Beta 1.1 (//) "Ide Update"/"Shading Update":
-	TDO: Add cliff shadows.
-	TDO: Add shadow and light effects.
 	TDO: Make it possible to switch between shaders with the option menu.
 	TDO: Slightly change HUD icons.
 	TDO: Delete enemies/generic folder.
-	TDO: Fix entities palettes (black to 40, 40, 40).
 
 Alpha 1.13/Beta 1.2 (//) "Jawfish Update"/"Weapon Update":
 	TDO: Add new items.
